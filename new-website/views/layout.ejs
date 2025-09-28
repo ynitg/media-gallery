@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- 顶部菜单区域 -->
+    <header class="bg-blue-600 text-white shadow-lg">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-network-wired text-white text-2xl"></i>
+                        <span class="ml-2 text-xl font-bold">IP管理系统</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm">
+                        <i class="fas fa-user mr-1"></i>欢迎, <%= admin.username %>
+                    </span>
+                    <a href="/settings" class="text-white hover:text-blue-200 transition-colors">
+                        <i class="fas fa-cog"></i>
+                    </a>
+                    <a href="/logout" class="text-white hover:text-blue-200 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex h-screen">
+        <!-- 左侧功能区域 -->
+        <aside class="bg-blue-600 text-white w-64 shadow-lg">
+            <nav class="mt-8">
+                <div class="px-4 space-y-2">
+                    <a href="/dashboard" class="sidebar-item <%= currentPage === 'dashboard' ? 'active' : '' %> flex items-center px-4 py-3 rounded-lg">
+                        <i class="fas fa-home mr-3"></i>
+                        <span>仪表板</span>
+                    </a>
+                    <a href="/ip-management" class="sidebar-item <%= currentPage === 'ip-management' ? 'active' : '' %> flex items-center px-4 py-3 rounded-lg">
+                        <i class="fas fa-server mr-3"></i>
+                        <span>IP管理</span>
+                    </a>
+                    <a href="/ip-split" class="sidebar-item <%= currentPage === 'ip-split' ? 'active' : '' %> flex items-center px-4 py-3 rounded-lg">
+                        <i class="fas fa-code-branch mr-3"></i>
+                        <span>IP分割</span>
+                    </a>
+                    <a href="/ip-merge" class="sidebar-item <%= currentPage === 'ip-merge' ? 'active' : '' %> flex items-center px-4 py-3 rounded-lg">
+                        <i class="fas fa-compress-alt mr-3"></i>
+                        <span>IP合并</span>
+                    </a>
+                    <a href="/settings" class="sidebar-item <%= currentPage === 'settings' ? 'active' : '' %> flex items-center px-4 py-3 rounded-lg">
+                        <i class="fas fa-cog mr-3"></i>
+                        <span>系统设置</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 右侧显示区域 -->
+        <main class="flex-1 bg-gray-50 overflow-y-auto">
+            <div class="p-6">
+                <%- body %>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+
+
+

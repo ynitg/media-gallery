@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full space-y-8 p-8">
+        <!-- Logo和标题 -->
+        <div class="text-center">
+            <div class="mx-auto h-16 w-16 bg-blue-600 rounded-full flex items-center justify-center">
+                <i class="fas fa-network-wired text-white text-2xl"></i>
+            </div>
+            <h2 class="mt-6 text-3xl font-bold text-gray-900">IP管理系统</h2>
+            <p class="mt-2 text-sm text-gray-600">管理员登录</p>
+        </div>
+
+        <!-- 登录表单 -->
+        <div class="card">
+            <% if (error) { %>
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-circle mt-0.5 mr-2"></i>
+                        <span><%= error %></span>
+                    </div>
+                </div>
+            <% } %>
+
+            <form class="space-y-6" action="/login" method="POST">
+                <div>
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user mr-2"></i>用户名
+                    </label>
+                    <input id="username" name="username" type="text" required 
+                           class="form-input" placeholder="请输入用户名"
+                           value="<%= typeof username !== 'undefined' ? username : '' %>">
+                </div>
+
+                <div>
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock mr-2"></i>密码
+                    </label>
+                    <input id="password" name="password" type="password" required 
+                           class="form-input" placeholder="请输入密码">
+                </div>
+
+                <div>
+                    <button type="submit" class="btn-primary w-full">
+                        <i class="fas fa-sign-in-alt mr-2"></i>登录
+                    </button>
+                </div>
+            </form>
+
+            <!-- 默认账户信息 -->
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 class="text-sm font-medium text-blue-800 mb-2">
+                    <i class="fas fa-info-circle mr-1"></i>默认账户信息
+                </h4>
+                <div class="text-sm text-blue-700">
+                    <p><strong>用户名:</strong> admin</p>
+                    <p><strong>密码:</strong> admin123</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="text-center text-sm text-gray-500">
+            <p>&copy; 2024 IP管理系统. 版权所有.</p>
+        </div>
+    </div>
+
+    <script>
+        // 自动填充默认账户信息（仅用于演示）
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            
+            // 如果输入框为空，自动填充默认值
+            if (!usernameInput.value) {
+                usernameInput.value = 'admin';
+            }
+            if (!passwordInput.value) {
+                passwordInput.value = 'admin123';
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- 顶部快速显示标签区域 -->
+    <header class="bg-blue-600 text-white shadow-lg">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="bg-blue-500 rounded-lg px-4 py-2">
+                        <span class="text-white font-medium">快速显示标签</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm">
+                        <i class="fas fa-user mr-1"></i>欢迎, <%= admin.username %>
+                    </span>
+                    <a href="/settings" class="text-white hover:text-blue-200 transition-colors">
+                        <i class="fas fa-cog"></i>
+                    </a>
+                    <a href="/logout" class="text-white hover:text-blue-200 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex h-screen">
+        <!-- 左侧多级菜单区域 -->
+        <aside class="bg-blue-600 text-white w-64 shadow-lg">
+            <nav class="mt-4">
+                <div class="px-4 space-y-1">
+                    <!-- 一级菜单 - 资源管理 -->
+                    <div class="menu-group">
+                        <div class="menu-item-level1 flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors" onclick="toggleMenu('resource')">
+                            <div class="flex items-center">
+                                <i class="fas fa-plus mr-3"></i>
+                                <span>资源管理</span>
+                            </div>
+                            <i class="fas fa-chevron-down transition-transform" id="resource-arrow"></i>
+                        </div>
+                        
+                        <!-- 二级菜单 -->
+                        <div class="ml-4 space-y-1" id="resource-submenu" style="display: block;">
+                            <!-- IP管理 -->
+                            <div class="menu-item-level2 flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors" onclick="toggleMenu('ip')">
+                                <span>IP管理</span>
+                                <i class="fas fa-chevron-down transition-transform" id="ip-arrow"></i>
+                            </div>
+                            
+                            <!-- 三级菜单 -->
+                            <div class="ml-4 space-y-1" id="ip-submenu" style="display: none;">
+                                <a href="/ip-management" class="menu-item-level3 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                    公网IP管理
+                                </a>
+                                <a href="/ip-management" class="menu-item-level3 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                    内网IP管理
+                                </a>
+                            </div>
+                            
+                            <!-- 机房管理 -->
+                            <a href="/server-room" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors bg-blue-700">
+                                机房管理
+                            </a>
+                            
+                            <!-- 楼内线管理 -->
+                            <a href="/building-lines" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                楼内线管理
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 一级菜单 - 用户管理 -->
+                    <div class="menu-group">
+                        <div class="menu-item-level1 flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors" onclick="toggleMenu('user')">
+                            <span>用户管理</span>
+                            <i class="fas fa-chevron-down transition-transform" id="user-arrow"></i>
+                        </div>
+                        
+                        <!-- 二级菜单 -->
+                        <div class="ml-4 space-y-1" id="user-submenu" style="display: none;">
+                            <a href="/user-groups" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                用户组管理
+                            </a>
+                            <a href="/users" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                用户管理
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 一级菜单 - 系统设置 -->
+                    <a href="/settings" class="menu-item-level1 block px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                        系统设置
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 右侧显示区域 -->
+        <main class="flex-1 bg-gray-50 overflow-y-auto">
+            <div class="p-6">
+                <!-- 页面标题和操作按钮 -->
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">机房管理</h1>
+                        <p class="mt-2 text-gray-600">管理机房信息</p>
+                    </div>
+                    <div class="space-x-3">
+                        <button onclick="openAddModal()" class="btn-primary">
+                            <i class="fas fa-plus mr-2"></i>添加机房
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 机房列表 -->
+                <div class="card">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead class="table-header">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>机房名称</th>
+                                    <th>位置</th>
+                                    <th>描述</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-body" id="serverRoomTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center text-gray-500 py-8">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 添加/编辑机房模态框 -->
+    <div id="serverRoomModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-900" id="modalTitle">添加机房</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="serverRoomForm" class="space-y-4">
+                    <input type="hidden" id="serverRoomId" name="id">
+                    
+                    <div>
+                        <label class="form-label">机房名称 *</label>
+                        <input type="text" id="serverRoomName" name="name" class="form-input" 
+                               placeholder="请输入机房名称" required>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">位置</label>
+                        <input type="text" id="serverRoomLocation" name="location" class="form-input" 
+                               placeholder="请输入机房位置">
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">描述</label>
+                        <textarea id="serverRoomDescription" name="description" class="form-input" rows="3" 
+                                  placeholder="机房描述信息..."></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeModal()" class="btn-secondary">
+                            取消
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save mr-2"></i>保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 菜单展开/收起功能
+        function toggleMenu(menuId) {
+            const submenu = document.getElementById(menuId + '-submenu');
+            const arrow = document.getElementById(menuId + '-arrow');
+            
+            if (submenu.style.display === 'none') {
+                submenu.style.display = 'block';
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                submenu.style.display = 'none';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // 加载机房列表
+        async function loadServerRooms() {
+            try {
+                const response = await fetch('/api/server-rooms');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayServerRooms(data.data);
+                } else {
+                    showAlert('加载机房列表失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('加载机房列表失败:', error);
+                showAlert('加载机房列表失败', 'error');
+            }
+        }
+
+        // 显示机房列表
+        function displayServerRooms(serverRooms) {
+            const tbody = document.getElementById('serverRoomTableBody');
+            
+            if (serverRooms.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-gray-500 py-8">
+                            <i class="fas fa-inbox mr-2"></i>暂无机房记录
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = serverRooms.map(room => `
+                <tr>
+                    <td>${room.id}</td>
+                    <td>${room.name}</td>
+                    <td>${room.location || '-'}</td>
+                    <td>${room.description || '-'}</td>
+                    <td>
+                        <span class="${room.status === 'active' ? 'status-active' : 'status-inactive'}">
+                            ${room.status === 'active' ? '活跃' : '非活跃'}
+                        </span>
+                    </td>
+                    <td>${new Date(room.created_at).toLocaleString('zh-CN')}</td>
+                    <td>
+                        <div class="flex space-x-2">
+                            <button onclick="editServerRoom(${room.id})" class="text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteServerRoom(${room.id})" class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 打开添加模态框
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = '添加机房';
+            document.getElementById('serverRoomForm').reset();
+            document.getElementById('serverRoomId').value = '';
+            document.getElementById('serverRoomModal').classList.remove('hidden');
+        }
+
+        // 编辑机房
+        async function editServerRoom(id) {
+            try {
+                const response = await fetch(`/api/server-rooms`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const room = data.data.find(r => r.id === id);
+                    if (room) {
+                        document.getElementById('modalTitle').textContent = '编辑机房';
+                        document.getElementById('serverRoomId').value = room.id;
+                        document.getElementById('serverRoomName').value = room.name;
+                        document.getElementById('serverRoomLocation').value = room.location || '';
+                        document.getElementById('serverRoomDescription').value = room.description || '';
+                        
+                        document.getElementById('serverRoomModal').classList.remove('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('获取机房信息失败:', error);
+                showAlert('获取机房信息失败', 'error');
+            }
+        }
+
+        // 删除机房
+        async function deleteServerRoom(id) {
+            if (!confirm('确定要删除这个机房记录吗？')) return;
+            
+            try {
+                const response = await fetch(`/api/server-rooms/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('机房记录删除成功', 'success');
+                    loadServerRooms();
+                } else {
+                    showAlert('删除机房记录失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('删除机房记录失败:', error);
+                showAlert('删除机房记录失败', 'error');
+            }
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('serverRoomModal').classList.add('hidden');
+        }
+
+        // 提交表单
+        document.getElementById('serverRoomForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const url = data.id ? `/api/server-rooms/${data.id}` : '/api/server-rooms';
+                const method = data.id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(data.id ? '机房记录更新成功' : '机房记录创建成功', 'success');
+                    closeModal();
+                    loadServerRooms();
+                } else {
+                    showAlert((data.id ? '更新' : '创建') + '机房记录失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('提交表单失败:', error);
+                showAlert('操作失败，请稍后重试', 'error');
+            }
+        });
+
+        // 显示提示信息
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-100 text-green-800' :
+                type === 'error' ? 'bg-red-100 text-red-800' :
+                'bg-blue-100 text-blue-800'
+            }`;
+            alertDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        // 页面加载完成后获取数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadServerRooms();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

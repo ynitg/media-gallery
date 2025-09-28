@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片与视频展示网站</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <!-- 顶部横幅 -->
+  <header class="banner">
+    <div class="banner-content">
+      <h1>图片与视频展示</h1>
+      <div class="ad-space">广告位</div>
+    </div>
+  </header>
+
+  <!-- 内容切换按钮 -->
+  <div class="content-switcher">
+    <button class="switch-btn active" data-type="all">全部内容</button>
+    <button class="switch-btn" data-type="image">图片</button>
+    <button class="switch-btn" data-type="video">视频</button>
+  </div>
+
+  <!-- 主内容区 -->
+  <main class="content-grid">
+    <!-- 瀑布流内容将通过JS动态加载 -->
+  </main>
+
+  <!-- 右侧隐藏侧边栏（标签云） -->
+  <aside class="sidebar">
+    <div class="tag-cloud">
+      <h3>标签云</h3>
+      <ul class="tags">
+        <!-- 标签将通过JS动态加载 -->
+      </ul>
+    </div>
+  </aside>
+
+  <script src="scripts/main.js"></script>
+</body>
+</html>

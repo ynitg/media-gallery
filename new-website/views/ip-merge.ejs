@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-network-wired text-blue-600 text-2xl"></i>
+                        <span class="ml-2 text-xl font-bold text-gray-900">IP管理系统</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-home"></i> 仪表板
+                    </a>
+                    <a href="/ip-management" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-server"></i> IP管理
+                    </a>
+                    <a href="/ip-split" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-code-branch"></i> IP分割
+                    </a>
+                    <span class="text-sm text-gray-700">
+                        <i class="fas fa-user mr-1"></i><%= admin.username %>
+                    </span>
+                    <a href="/logout" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- 页面标题 -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">IP合并</h1>
+            <p class="mt-2 text-gray-600">将多个相邻的IP段合并成一个更大的网段</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- 合并配置 -->
+            <div class="card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    <i class="fas fa-compress-alt mr-2"></i>合并配置
+                </h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">选择要合并的IP段 *</label>
+                        <div class="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                            <div id="ipList">
+                                <div class="text-center text-gray-500 py-4">
+                                    <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">至少选择2个IP段进行合并</p>
+                    </div>
+                    
+                    <div>
+                        <button onclick="previewMerge()" class="btn-secondary w-full mb-2">
+                            <i class="fas fa-eye mr-2"></i>预览合并
+                        </button>
+                        <button onclick="executeMerge()" class="btn-success w-full" disabled id="mergeButton">
+                            <i class="fas fa-compress-alt mr-2"></i>执行合并
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 合并预览 -->
+            <div class="card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    <i class="fas fa-eye mr-2"></i>合并预览
+                </h3>
+                
+                <div id="mergePreview" class="space-y-3">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        请选择要合并的IP段以查看预览
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 合并结果 -->
+        <div class="card mt-8" id="mergeResult" style="display: none;">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <i class="fas fa-check-circle mr-2"></i>合并结果
+            </h3>
+            
+            <div class="table-container">
+                <table class="table">
+                    <thead class="table-header">
+                        <tr>
+                            <th>序号</th>
+                            <th>合并后网段</th>
+                            <th>CIDR</th>
+                            <th>网络地址</th>
+                            <th>广播地址</th>
+                            <th>可用主机数</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body" id="mergeResultBody">
+                        <!-- 结果将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 合并历史 -->
+        <div class="card mt-8">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <i class="fas fa-history mr-2"></i>合并历史
+            </h3>
+            
+            <div class="table-container">
+                <table class="table">
+                    <thead class="table-header">
+                        <tr>
+                            <th>时间</th>
+                            <th>源IP段</th>
+                            <th>合并后网段</th>
+                            <th>操作者</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body" id="mergeHistoryBody">
+                        <tr>
+                            <td colspan="5" class="text-center text-gray-500 py-8">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let availableIPs = [];
+        let selectedIPs = [];
+
+        // 加载可用的IP段
+        async function loadAvailableIPs() {
+            try {
+                const response = await fetch('/api/ips?limit=1000');
+                const data = await response.json();
+                
+                if (data.success) {
+                    availableIPs = data.data.filter(ip => ip.status === 'active');
+                    populateIPList();
+                } else {
+                    showAlert('加载IP段失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('加载IP段失败:', error);
+                showAlert('加载IP段失败', 'error');
+            }
+        }
+
+        // 填充IP列表
+        function populateIPList() {
+            const container = document.getElementById('ipList');
+            
+            if (availableIPs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-4">
+                        <i class="fas fa-inbox mr-2"></i>暂无可用的IP段
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = availableIPs.map(ip => `
+                <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                    <input type="checkbox" id="ip_${ip.id}" value="${ip.id}" 
+                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                           onchange="toggleIPSelection(${ip.id})">
+                    <label for="ip_${ip.id}" class="flex-1 cursor-pointer">
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium">${ip.ip_address}/${ip.subnet_mask}</span>
+                            <span class="text-sm text-gray-500">${ip.description || '无描述'}</span>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            网络: ${ip.network_address} | 广播: ${ip.broadcast_address}
+                        </div>
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        // 切换IP选择
+        function toggleIPSelection(ipId) {
+            const checkbox = document.getElementById(`ip_${ipId}`);
+            const ip = availableIPs.find(ip => ip.id == ipId);
+            
+            if (checkbox.checked) {
+                if (!selectedIPs.find(selected => selected.id == ipId)) {
+                    selectedIPs.push(ip);
+                }
+            } else {
+                selectedIPs = selectedIPs.filter(selected => selected.id != ipId);
+            }
+            
+            updateMergeButton();
+        }
+
+        // 更新合并按钮状态
+        function updateMergeButton() {
+            const mergeButton = document.getElementById('mergeButton');
+            mergeButton.disabled = selectedIPs.length < 2;
+        }
+
+        // 预览合并
+        function previewMerge() {
+            if (selectedIPs.length < 2) {
+                showAlert('请至少选择2个IP段进行合并', 'error');
+                return;
+            }
+
+            try {
+                // 检查IP段是否可以合并
+                const canMerge = checkMergeability(selectedIPs);
+                
+                if (!canMerge.canMerge) {
+                    document.getElementById('mergePreview').innerHTML = `
+                        <div class="text-center text-red-500 py-8">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            ${canMerge.reason}
+                        </div>
+                    `;
+                    return;
+                }
+
+                // 生成合并预览
+                const previewHTML = `
+                    <div class="space-y-3">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-blue-900 mb-2">选择的IP段</h4>
+                            <div class="space-y-1">
+                                ${selectedIPs.map(ip => `
+                                    <div class="text-sm text-blue-800">
+                                        • ${ip.ip_address}/${ip.subnet_mask} (${ip.description || '无描述'})
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-green-900 mb-2">合并后网段</h4>
+                            <div class="space-y-1">
+                                ${canMerge.mergedRanges.map(range => `
+                                    <div class="text-sm text-green-800">
+                                        • ${range.cidr} (${range.size} 个地址)
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-yellow-900 mb-2">注意事项</h4>
+                            <p class="text-sm text-yellow-800">• 合并后将创建新的IP段记录</p>
+                            <p class="text-sm text-yellow-800">• 原IP段状态将保持不变</p>
+                            <p class="text-sm text-yellow-800">• 合并操作不可逆</p>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('mergePreview').innerHTML = previewHTML;
+            } catch (error) {
+                document.getElementById('mergePreview').innerHTML = `
+                    <div class="text-center text-red-500 py-8">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        预览生成失败: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // 检查合并可行性
+        function checkMergeability(ips) {
+            if (ips.length < 2) {
+                return { canMerge: false, reason: '至少需要2个IP段才能合并' };
+            }
+
+            // 检查所有IP段是否具有相同的子网掩码
+            const firstMask = ips[0].subnet_mask;
+            if (!ips.every(ip => ip.subnet_mask === firstMask)) {
+                return { canMerge: false, reason: '所有IP段必须具有相同的子网掩码' };
+            }
+
+            // 检查IP段是否相邻
+            const sortedIPs = ips.sort((a, b) => {
+                const aLong = ipToLong(a.network_address);
+                const bLong = ipToLong(b.network_address);
+                return aLong - bLong;
+            });
+
+            for (let i = 1; i < sortedIPs.length; i++) {
+                const prevBroadcast = ipToLong(sortedIPs[i-1].broadcast_address);
+                const currentNetwork = ipToLong(sortedIPs[i].network_address);
+                
+                if (currentNetwork !== prevBroadcast + 1) {
+                    return { canMerge: false, reason: 'IP段必须相邻才能合并' };
+                }
+            }
+
+            // 计算合并后的网段
+            const mergedRanges = calculateMergedRanges(sortedIPs);
+            
+            return { 
+                canMerge: true, 
+                mergedRanges: mergedRanges 
+            };
+        }
+
+        // 计算合并后的网段
+        function calculateMergedRanges(sortedIPs) {
+            const firstNetwork = sortedIPs[0].network_address;
+            const lastBroadcast = sortedIPs[sortedIPs.length - 1].broadcast_address;
+            const originalMask = parseInt(sortedIPs[0].subnet_mask);
+            
+            // 计算合并后的掩码
+            const totalSize = sortedIPs.length * Math.pow(2, 32 - originalMask);
+            const newMask = 32 - Math.log2(totalSize);
+            
+            return [{
+                cidr: `${firstNetwork}/${Math.floor(newMask)}`,
+                size: totalSize,
+                network: firstNetwork,
+                broadcast: lastBroadcast
+            }];
+        }
+
+        // IP地址转长整型
+        function ipToLong(ip) {
+            return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet), 0) >>> 0;
+        }
+
+        // 执行合并
+        async function executeMerge() {
+            if (selectedIPs.length < 2) {
+                showAlert('请至少选择2个IP段进行合并', 'error');
+                return;
+            }
+
+            if (!confirm('确定要执行IP合并操作吗？此操作不可逆。')) {
+                return;
+            }
+
+            try {
+                const ipIds = selectedIPs.map(ip => ip.id);
+                
+                const response = await fetch('/api/ips/merge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ip_ids: ipIds })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('IP段合并成功', 'success');
+                    displayMergeResult(data.data);
+                    loadMergeHistory();
+                    loadAvailableIPs(); // 重新加载可用IP段
+                    
+                    // 清空选择
+                    selectedIPs = [];
+                    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                    updateMergeButton();
+                } else {
+                    showAlert('合并失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('合并失败:', error);
+                showAlert('合并失败，请稍后重试', 'error');
+            }
+        }
+
+        // 显示合并结果
+        function displayMergeResult(result) {
+            const resultDiv = document.getElementById('mergeResult');
+            const tbody = document.getElementById('mergeResultBody');
+            
+            const html = result.merged_ranges.map((range, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${range.network}</td>
+                    <td>${range.cidr}</td>
+                    <td>${range.network}</td>
+                    <td>${range.broadcast}</td>
+                    <td>${range.size - 2}</td>
+                </tr>
+            `).join('');
+            
+            tbody.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+
+        // 加载合并历史
+        async function loadMergeHistory() {
+            try {
+                // 这里应该调用实际的历史记录API
+                // 暂时显示模拟数据
+                const tbody = document.getElementById('mergeHistoryBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-gray-500 py-8">
+                            <i class="fas fa-inbox mr-2"></i>暂无合并历史
+                        </td>
+                    </tr>
+                `;
+            } catch (error) {
+                console.error('加载合并历史失败:', error);
+            }
+        }
+
+        // 显示提示信息
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-100 text-green-800' :
+                type === 'error' ? 'bg-red-100 text-red-800' :
+                'bg-blue-100 text-blue-800'
+            }`;
+            alertDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAvailableIPs();
+            loadMergeHistory();
+        });
+    </script>
+</body>
+</html>
+
+
+
+

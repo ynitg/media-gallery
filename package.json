@@ -1,0 +1,27 @@
+{
+  "name": "agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install-tg-deps": "node install-tg-deps.js",
+    "tg-scraper": "node run-tg-scraper.js",
+    "tg-scraper:test": "node run-tg-scraper.js --test",
+    "tg-scraper:config": "node run-tg-scraper.js --config"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.12.2",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "form-data": "^4.0.4",
+    "multer": "^2.0.2",
+    "telegram": "^2.26.22"
+  }
+}

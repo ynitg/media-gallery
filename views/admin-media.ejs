@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>媒体管理</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .stats { background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+    .stat-item { text-align: center; }
+    .stat-number { font-size: 24px; font-weight: bold; color: #2563eb; }
+    .stat-label { font-size: 14px; color: #6b7280; }
+    
+    .media-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+      gap: 20px; 
+    }
+    
+    .media-card { 
+      border: 1px solid #e5e7eb; 
+      border-radius: 12px; 
+      overflow: hidden; 
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .media-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .media-preview { position: relative; height: 200px; overflow: hidden; }
+    .media-preview img, .media-preview video { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover; 
+    }
+    .media-type { 
+      position: absolute; 
+      top: 8px; 
+      right: 8px; 
+      background: rgba(0,0,0,0.7); 
+      color: white; 
+      padding: 4px 8px; 
+      border-radius: 4px; 
+      font-size: 12px; 
+    }
+    
+    .media-info { padding: 16px; }
+    .media-name { font-weight: 500; margin-bottom: 8px; word-break: break-all; }
+    .media-meta { font-size: 12px; color: #6b7280; margin-bottom: 8px; }
+    .media-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+    .tag { background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+    
+    .media-actions { display: flex; gap: 8px; }
+    .btn { 
+      padding: 6px 12px; 
+      border: 0; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-size: 12px; 
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    
+    .empty-state { 
+      text-align: center; 
+      padding: 60px 20px; 
+      color: #6b7280; 
+    }
+    
+    .links { margin-bottom: 20px; }
+    .links a { color: #2563eb; text-decoration: none; margin-right: 16px; }
+    .links a:hover { text-decoration: underline; }
+    
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+    .modal-content { 
+      position: absolute; 
+      top: 50%; 
+      left: 50%; 
+      transform: translate(-50%, -50%); 
+      background: white; 
+      padding: 24px; 
+      border-radius: 12px; 
+      max-width: 400px; 
+      width: 90%; 
+    }
+    .modal-header { margin-bottom: 16px; }
+    .modal-footer { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+    
+    /* Search and Filter Controls */
+    .controls { 
+      background: #f9fafb; 
+      padding: 20px; 
+      border-radius: 12px; 
+      margin-bottom: 20px; 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 16px; 
+      align-items: center; 
+    }
+    .search-box { display: flex; gap: 8px; flex: 1; min-width: 300px; }
+    .search-box input { 
+      flex: 1; 
+      padding: 10px 12px; 
+      border: 1px solid #d1d5db; 
+      border-radius: 8px; 
+      font-size: 14px; 
+    }
+    .search-box button { 
+      padding: 10px 16px; 
+      background: #2563eb; 
+      color: white; 
+      border: 0; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: 500; 
+    }
+    .search-box button:hover { background: #1d4ed8; }
+    .filter-controls { display: flex; gap: 12px; flex-wrap: wrap; }
+    .filter-controls select { 
+      padding: 8px 12px; 
+      border: 1px solid #d1d5db; 
+      border-radius: 6px; 
+      background: white; 
+      font-size: 14px; 
+    }
+    
+    /* Pagination */
+    .pagination { 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      gap: 8px; 
+      margin: 30px 0; 
+    }
+    .pagination button { 
+      padding: 8px 12px; 
+      border: 1px solid #d1d5db; 
+      background: white; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-size: 14px; 
+    }
+    .pagination button:hover { background: #f3f4f6; }
+    .pagination button:disabled { 
+      background: #f9fafb; 
+      color: #9ca3af; 
+      cursor: not-allowed; 
+    }
+    .pagination .current-page { 
+      padding: 8px 12px; 
+      background: #2563eb; 
+      color: white; 
+      border-radius: 6px; 
+      font-weight: 500; 
+    }
+    .pagination-info { 
+      text-align: center; 
+      color: #6b7280; 
+      font-size: 14px; 
+      margin-bottom: 20px; 
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>媒体管理</h1>
+    <div>
+      <button onclick="selectAll()" class="btn btn-primary">全选</button>
+      <button onclick="selectNone()" class="btn btn-primary">取消全选</button>
+      <button onclick="batchDelete()" class="btn btn-danger" id="batchDeleteBtn" disabled>批量删除</button>
+      <a href="/admin" class="btn btn-primary">上传媒体</a>
+      <a href="/logout" class="btn btn-danger">退出登录</a>
+    </div>
+  </div>
+  
+  <div class="links">
+    <a href="/">返回首页</a>
+    <a href="/admin">上传媒体</a>
+  </div>
+  
+  <!-- Search and Filter Controls -->
+  <div class="controls">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索文件名或标签..." value="<%= filters.search %>" />
+      <button onclick="performSearch()">搜索</button>
+    </div>
+    
+    <div class="filter-controls">
+      <select id="typeFilter" onchange="applyFilters()">
+        <option value="all" <%= filters.type === 'all' ? 'selected' : '' %>>所有类型</option>
+        <option value="image" <%= filters.type === 'image' ? 'selected' : '' %>>仅图片</option>
+        <option value="video" <%= filters.type === 'video' ? 'selected' : '' %>>仅视频</option>
+      </select>
+      
+      <select id="sortFilter" onchange="applyFilters()">
+        <option value="date-desc" <%= filters.sort === 'date-desc' ? 'selected' : '' %>>按时间降序</option>
+        <option value="date-asc" <%= filters.sort === 'date-asc' ? 'selected' : '' %>>按时间升序</option>
+        <option value="name-asc" <%= filters.sort === 'name-asc' ? 'selected' : '' %>>按名称升序</option>
+        <option value="name-desc" <%= filters.sort === 'name-desc' ? 'selected' : '' %>>按名称降序</option>
+      </select>
+      
+      <select id="limitFilter" onchange="applyFilters()">
+        <option value="12" <%= pagination.limit === 12 ? 'selected' : '' %>>每页12个</option>
+        <option value="24" <%= pagination.limit === 24 ? 'selected' : '' %>>每页24个</option>
+        <option value="48" <%= pagination.limit === 48 ? 'selected' : '' %>>每页48个</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="stats">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-number"><%= pagination.totalItems %></div>
+        <div class="stat-label">总媒体数</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number"><%= pagination.currentPage %>/<%= pagination.totalPages %></div>
+        <div class="stat-label">当前页</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number"><%= media.filter(m => m.type === 'image').length %></div>
+        <div class="stat-label">图片</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number"><%= media.filter(m => m.type === 'video').length %></div>
+        <div class="stat-label">视频</div>
+      </div>
+    </div>
+  </div>
+  
+  <% if (media.length === 0) { %>
+    <div class="empty-state">
+      <h3>暂无媒体文件</h3>
+      <p>点击"上传媒体"开始添加图片和视频</p>
+    </div>
+  <% } else { %>
+    <div class="media-grid">
+      <% media.forEach(function(item){ %>
+        <div class="media-card">
+          <div class="media-preview">
+            <input type="checkbox" class="media-checkbox" value="<%= item.id %>" onchange="updateBatchButtons()" style="position: absolute; top: 8px; left: 8px; z-index: 10;">
+            <% if (item.type === 'video') { %>
+              <video preload="metadata">
+                <source src="<%= item.path %>" type="video/mp4">
+              </video>
+              <div class="media-type">▶ 视频</div>
+            <% } else { %>
+              <img src="<%= item.path %>" alt="<%= item.originalName %>" />
+              <div class="media-type">📷 图片</div>
+            <% } %>
+          </div>
+          
+          <div class="media-info">
+            <div class="media-name"><%= item.originalName %></div>
+            <div class="media-meta">
+              上传时间: <%= new Date(item.uploadTime).toLocaleString() %><br>
+              文件大小: <%= item.filename %>
+            </div>
+            
+            <% if (item.tags && item.tags.length > 0) { %>
+              <div class="media-tags">
+                <% item.tags.forEach(tag => { %>
+                  <span class="tag"><%= tag %></span>
+                <% }); %>
+              </div>
+            <% } %>
+            
+            <div class="media-actions">
+              <a href="<%= item.path %>" target="_blank" class="btn btn-primary">查看</a>
+              <button onclick="deleteMedia('<%= item.id %>', '<%= item.originalName %>')" class="btn btn-danger">删除</button>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+    
+    <!-- Pagination -->
+    <% if (pagination.totalPages > 1) { %>
+      <div class="pagination-info">
+        显示第 <%= (pagination.currentPage - 1) * pagination.limit + 1 %> - <%= Math.min(pagination.currentPage * pagination.limit, pagination.totalItems) %> 项，共 <%= pagination.totalItems %> 项
+      </div>
+      
+      <div class="pagination">
+        <button onclick="goToPage(1)" <%= !pagination.hasPrev ? 'disabled' : '' %>>首页</button>
+        <button onclick="goToPage(<%= pagination.currentPage - 1 %>)" <%= !pagination.hasPrev ? 'disabled' : '' %>>上一页</button>
+        
+        <% 
+        const startPage = Math.max(1, pagination.currentPage - 2);
+        const endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+        for (let i = startPage; i <= endPage; i++) { %>
+          <% if (i === pagination.currentPage) { %>
+            <span class="current-page"><%= i %></span>
+          <% } else { %>
+            <button onclick="goToPage(<%= i %>)"><%= i %></button>
+          <% } %>
+        <% } %>
+        
+        <button onclick="goToPage(<%= pagination.currentPage + 1 %>)" <%= !pagination.hasNext ? 'disabled' : '' %>>下一页</button>
+        <button onclick="goToPage(<%= pagination.totalPages %>)" <%= !pagination.hasNext ? 'disabled' : '' %>>末页</button>
+      </div>
+    <% } %>
+  <% } %>
+  
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>确认删除</h3>
+      </div>
+      <p>确定要删除 "<span id="deleteFileName"></span>" 吗？</p>
+      <p style="color: #ef4444; font-size: 14px;">此操作不可撤销，文件将从服务器永久删除。</p>
+      <div class="modal-footer">
+        <button onclick="closeDeleteModal()" class="btn btn-primary">取消</button>
+        <button onclick="confirmDelete()" class="btn btn-danger">确认删除</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    let deleteItemId = null;
+    let batchDeleteIds = [];
+    
+    function deleteMedia(id, fileName) {
+      deleteItemId = id;
+      document.getElementById('deleteFileName').textContent = fileName;
+      document.getElementById('deleteModal').style.display = 'block';
+    }
+    
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').style.display = 'none';
+      deleteItemId = null;
+    }
+    
+    function confirmDelete() {
+      if (!deleteItemId) return;
+      
+      fetch(`/admin/media/${deleteItemId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert('删除失败: ' + data.error);
+        }
+      })
+      .catch(error => {
+        alert('删除失败: ' + error.message);
+      });
+      
+      closeDeleteModal();
+    }
+    
+    // Batch operations
+    function selectAll() {
+      document.querySelectorAll('.media-checkbox').forEach(checkbox => {
+        checkbox.checked = true;
+      });
+      updateBatchButtons();
+    }
+    
+    function selectNone() {
+      document.querySelectorAll('.media-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      updateBatchButtons();
+    }
+    
+    function updateBatchButtons() {
+      const checkedBoxes = document.querySelectorAll('.media-checkbox:checked');
+      const batchDeleteBtn = document.getElementById('batchDeleteBtn');
+      
+      if (checkedBoxes.length > 0) {
+        batchDeleteBtn.disabled = false;
+        batchDeleteBtn.textContent = `批量删除 (${checkedBoxes.length})`;
+      } else {
+        batchDeleteBtn.disabled = true;
+        batchDeleteBtn.textContent = '批量删除';
+      }
+    }
+    
+    function batchDelete() {
+      const checkedBoxes = document.querySelectorAll('.media-checkbox:checked');
+      if (checkedBoxes.length === 0) {
+        alert('请选择要删除的文件');
+        return;
+      }
+      
+      const ids = Array.from(checkedBoxes).map(cb => cb.value);
+      const fileNames = Array.from(checkedBoxes).map(cb => {
+        const card = cb.closest('.media-card');
+        return card.querySelector('.media-name').textContent;
+      });
+      
+      if (confirm(`确定要删除选中的 ${ids.length} 个文件吗？\n\n${fileNames.join('\n')}\n\n此操作不可撤销！`)) {
+        fetch('/admin/media/batch', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ids: ids })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert(data.message);
+            location.reload();
+          } else {
+            alert('批量删除失败: ' + data.error);
+          }
+        })
+        .catch(error => {
+          alert('批量删除失败: ' + error.message);
+        });
+      }
+    }
+    
+    // Search and Filter Functions
+    function performSearch() {
+      applyFilters();
+    }
+    
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value;
+      const type = document.getElementById('typeFilter').value;
+      const sort = document.getElementById('sortFilter').value;
+      const limit = document.getElementById('limitFilter').value;
+      
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (type !== 'all') params.set('type', type);
+      if (sort !== 'date-desc') params.set('sort', sort);
+      if (limit !== '12') params.set('limit', limit);
+      
+      window.location.href = '/admin/media?' + params.toString();
+    }
+    
+    function goToPage(page) {
+      const search = document.getElementById('searchInput').value;
+      const type = document.getElementById('typeFilter').value;
+      const sort = document.getElementById('sortFilter').value;
+      const limit = document.getElementById('limitFilter').value;
+      
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (type !== 'all') params.set('type', type);
+      if (sort !== 'date-desc') params.set('sort', sort);
+      if (limit !== '12') params.set('limit', limit);
+      params.set('page', page);
+      
+      window.location.href = '/admin/media?' + params.toString();
+    }
+    
+    // Search on Enter key
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        performSearch();
+      }
+    });
+    
+    // Close modal when clicking outside
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeDeleteModal();
+      }
+    });
+  </script>
+</body>
+</html>
+

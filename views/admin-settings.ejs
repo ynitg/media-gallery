@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>网站设置</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin: 40px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card { margin-bottom: 24px; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; }
+    h1 { font-size: 24px; margin: 0 0 24px; }
+    h2 { font-size: 18px; margin: 0 0 16px; color: #374151; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 4px; font-weight: 500; }
+    input[type="text"], input[type="file"], textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Courier New', monospace; }
+    textarea { resize: vertical; min-height: 120px; }
+    button { padding: 10px 16px; border: 0; border-radius: 8px; background: #2563eb; color: #fff; cursor: pointer; font-weight: 500; }
+    button:hover { background: #1d4ed8; }
+    button.danger { background: #ef4444; }
+    button.danger:hover { background: #dc2626; }
+    .help-text { font-size: 14px; color: #6b7280; margin-top: 4px; }
+    .preview { margin-top: 12px; padding: 16px; background: #f9fafb; border-radius: 8px; }
+    .preview img { max-width: 100%; max-height: 200px; border-radius: 8px; }
+    .current-bg { margin-top: 12px; }
+    .current-bg img { max-width: 100%; max-height: 150px; border-radius: 8px; border: 2px solid #e5e7eb; }
+    .links { margin-top: 20px; }
+    .links a { color: #2563eb; text-decoration: none; margin-right: 16px; }
+    .links a:hover { text-decoration: underline; }
+    .success { color: #059669; font-weight: 500; }
+    .error { color: #dc2626; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>网站设置</h1>
+    
+    <!-- Site Title Settings -->
+    <div class="card">
+      <h2>网站标题设置</h2>
+      <div class="form-group">
+        <label for="siteTitle">网站标题</label>
+        <input type="text" id="siteTitle" value="<%= settings.siteTitle %>" placeholder="请输入网站标题" />
+        <div class="help-text">这个标题将显示在首页的顶部</div>
+      </div>
+      <button onclick="updateTitle()">更新标题</button>
+      <div id="titleMessage" style="margin-top: 8px;"></div>
+    </div>
+    
+    <!-- Background Image Settings -->
+    <div class="card">
+      <h2>背景图片设置</h2>
+      
+      <% if (settings.backgroundImage) { %>
+        <div class="current-bg">
+          <h3>当前背景图片</h3>
+          <img src="<%= settings.backgroundImage %>" alt="当前背景" />
+          <div style="margin-top: 8px;">
+            <button onclick="removeBackground()" class="danger">删除背景图片</button>
+          </div>
+        </div>
+      <% } else { %>
+        <p style="color: #6b7280;">暂无背景图片</p>
+      <% } %>
+      
+      <div class="form-group" style="margin-top: 20px;">
+        <label for="backgroundFile">上传新背景图片</label>
+        <input type="file" id="backgroundFile" accept="image/*" />
+        <div class="help-text">支持 JPG, PNG, GIF, WebP 格式，建议尺寸 1920x1080 或更大</div>
+      </div>
+      
+      <button onclick="uploadBackground()">上传背景图片</button>
+      <div id="backgroundMessage" style="margin-top: 8px;"></div>
+      
+      <div id="preview" class="preview" style="display: none;">
+        <h3>预览</h3>
+        <img id="previewImg" src="" alt="预览" />
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>网站统计设置</h2>
+      <div class="form-group">
+        <label for="analyticsCode">统计代码</label>
+        <textarea id="analyticsCode" rows="8" placeholder="请粘贴您的统计代码，如 Google Analytics、百度统计等..."><%= settings.analyticsCode || '' %></textarea>
+        <div class="help-text">
+          支持各种统计服务，如：<br>
+          • Google Analytics (gtag.js)<br>
+          • 百度统计<br>
+          • 腾讯分析<br>
+          • 其他第三方统计服务<br>
+          请直接粘贴完整的统计代码，系统会自动插入到页面头部。
+        </div>
+      </div>
+      <button onclick="updateAnalytics()">更新统计代码</button>
+      <div id="analyticsMessage" style="margin-top: 8px;"></div>
+    </div>
+    
+    <div class="links">
+      <a href="/">返回首页</a>
+      <a href="/admin">上传媒体</a>
+      <a href="/admin/media">媒体管理</a>
+      <a href="/logout">退出登录</a>
+    </div>
+  </div>
+  
+  <script>
+    function updateTitle() {
+      const title = document.getElementById('siteTitle').value.trim();
+      if (!title) {
+        showMessage('titleMessage', '请输入网站标题', 'error');
+        return;
+      }
+      
+      fetch('/admin/settings/title', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ siteTitle: title })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showMessage('titleMessage', data.message, 'success');
+        } else {
+          showMessage('titleMessage', data.error, 'error');
+        }
+      })
+      .catch(error => {
+        showMessage('titleMessage', '更新失败: ' + error.message, 'error');
+      });
+    }
+    
+    function uploadBackground() {
+      const fileInput = document.getElementById('backgroundFile');
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        showMessage('backgroundMessage', '请选择背景图片', 'error');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('background', file);
+      
+      fetch('/admin/settings/background', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showMessage('backgroundMessage', data.message, 'success');
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+        } else {
+          showMessage('backgroundMessage', data.error, 'error');
+        }
+      })
+      .catch(error => {
+        showMessage('backgroundMessage', '上传失败: ' + error.message, 'error');
+      });
+    }
+    
+    function removeBackground() {
+      if (!confirm('确定要删除当前背景图片吗？')) {
+        return;
+      }
+      
+      fetch('/admin/settings/background', {
+        method: 'DELETE'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showMessage('backgroundMessage', data.message, 'success');
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+        } else {
+          showMessage('backgroundMessage', data.error, 'error');
+        }
+      })
+      .catch(error => {
+        showMessage('backgroundMessage', '删除失败: ' + error.message, 'error');
+      });
+    }
+    
+    function updateAnalytics() {
+      const analyticsCode = document.getElementById('analyticsCode').value;
+      
+      fetch('/admin/settings/analytics', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ analyticsCode: analyticsCode })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showMessage('analyticsMessage', data.message, 'success');
+          setTimeout(() => {
+            document.getElementById('analyticsMessage').textContent = '';
+          }, 2000);
+        } else {
+          showMessage('analyticsMessage', data.error, 'error');
+        }
+      })
+      .catch(error => {
+        showMessage('analyticsMessage', '更新失败: ' + error.message, 'error');
+      });
+    }
+    
+    function showMessage(elementId, message, type) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      element.className = type;
+    }
+    
+    // Preview uploaded image
+    document.getElementById('backgroundFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('previewImg').src = e.target.result;
+          document.getElementById('preview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        document.getElementById('preview').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>媒体分享网站</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="background-area" id="backgroundArea"></div>
+            <div class="header-content">
+                <h1>媒体分享网站</h1>
+                <div class="controls">
+                    <div class="type-filter-container">
+                        <span class="type-tag active" data-type="all">全部</span>
+                        <span class="type-tag" data-type="image">图片</span>
+                        <span class="type-tag" data-type="video">视频</span>
+                    </div>
+                    <select id="tagFilter" class="tag-filter">
+                        <option value="">标签筛选</option>
+                    </select>
+                </div>
+                <div class="header-actions">
+                    <a href="admin.html" class="btn" style="background: rgba(255,255,255,0.2); color: white; text-decoration: none; display: inline-block;">🔐 登录</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-container">
+            <main>
+                <div id="mediaGrid" class="media-grid">
+                    <!-- 媒体项目将在这里动态加载 -->
+                </div>
+                <div id="loading" class="loading">加载中...</div>
+            </main>
+            
+            <aside class="sidebar">
+                <div class="tag-cloud-container">
+                    <h3>标签云</h3>
+                    <div id="tagCloud" class="tag-cloud">
+                        <!-- 标签云将在这里动态生成 -->
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+  
+    <!-- 媒体预览模态框 -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content preview-content">
+            <span class="close">&times;</span>
+            <div id="previewContainer">
+                <!-- 预览内容将在这里显示 -->
+            </div>
+            <div id="previewInfo" class="preview-info">
+                <!-- 文件信息将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!-- 左侧多级菜单区域 -->
+<aside class="bg-blue-600 text-white w-64 shadow-lg">
+    <nav class="mt-4">
+        <div class="px-4 space-y-1">
+            <!-- 一级菜单 - 资源管理 -->
+            <div class="menu-group">
+                <div class="menu-item-level1 flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors" onclick="toggleMenu('resource')">
+                    <div class="flex items-center">
+                        <i class="fas fa-plus mr-3"></i>
+                        <span>资源管理</span>
+                    </div>
+                    <i class="fas fa-chevron-down transition-transform" id="resource-arrow"></i>
+                </div>
+                
+                <!-- 二级菜单 -->
+                <div class="ml-4 space-y-1" id="resource-submenu" style="display: <%= currentPage === 'ip-management' ? 'block' : 'none' %>;">
+                    <!-- IP管理 -->
+                    <div class="menu-item-level2 flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors" onclick="toggleMenu('ip')">
+                        <span>IP管理</span>
+                        <i class="fas fa-chevron-down transition-transform" id="ip-arrow"></i>
+                    </div>
+                    
+                    <!-- 三级菜单 -->
+                    <div class="ml-4 space-y-1" id="ip-submenu" style="display: <%= currentPage === 'ip-management' ? 'block' : 'none' %>;">
+                        <a href="/ip-management" class="menu-item-level3 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors <%= currentPage === 'ip-management' ? 'bg-blue-700' : '' %>">
+                            公网IP管理
+                        </a>
+                        <a href="/ip-management" class="menu-item-level3 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            内网IP管理
+                        </a>
+                    </div>
+                    
+                    <!-- 机房管理 -->
+                    <a href="/server-room" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        机房管理
+                    </a>
+                    
+                    <!-- 楼内线管理 -->
+                    <a href="/building-lines" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        楼内线管理
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 一级菜单 - 用户管理 -->
+            <div class="menu-group">
+                <div class="menu-item-level1 flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors" onclick="toggleMenu('user')">
+                    <span>用户管理</span>
+                    <i class="fas fa-chevron-down transition-transform" id="user-arrow"></i>
+                </div>
+                
+                <!-- 二级菜单 -->
+                <div class="ml-4 space-y-1" id="user-submenu" style="display: none;">
+                    <a href="/user-groups" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        用户组管理
+                    </a>
+                    <a href="/users" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        用户管理
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 一级菜单 - 系统设置 -->
+            <a href="/settings" class="menu-item-level1 block px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors <%= currentPage === 'settings' ? 'bg-blue-700' : '' %>">
+                系统设置
+            </a>
+        </div>
+    </nav>
+</aside>
+
+

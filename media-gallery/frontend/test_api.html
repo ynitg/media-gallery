@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .result {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .success {
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left: 4px solid #f44336;
+        }
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>API连接测试</h1>
+    
+    <button onclick="testMediaAPI()">测试媒体API</button>
+    <button onclick="testTagsAPI()">测试标签API</button>
+    <button onclick="testImageAccess()">测试图片访问</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testMediaAPI() {
+            const resultsDiv = document.getElementById('results');
+            try {
+                const response = await fetch('http://localhost:5000/api/media?per_page=3');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML += `
+                        <div class="result success">
+                            <h3>✓ 媒体API测试成功</h3>
+                            <p>状态码: ${response.status}</p>
+                            <p>总记录数: ${data.total}</p>
+                            <p>当前页: ${data.current_page}/${data.pages}</p>
+                            <p>返回记录数: ${data.media.length}</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="result error">
+                            <h3>✗ 媒体API测试失败</h3>
+                            <p>状态码: ${response.status}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="result error">
+                        <h3>✗ 媒体API连接失败</h3>
+                        <p>错误: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testTagsAPI() {
+            const resultsDiv = document.getElementById('results');
+            try {
+                const response = await fetch('http://localhost:5000/api/tags');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML += `
+                        <div class="result success">
+                            <h3>✓ 标签API测试成功</h3>
+                            <p>状态码: ${response.status}</p>
+                            <p>标签数量: ${data.tags.length}</p>
+                            <p>前5个标签: ${data.tags.slice(0, 5).join(', ')}</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="result error">
+                            <h3>✗ 标签API测试失败</h3>
+                            <p>状态码: ${response.status}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="result error">
+                        <h3>✗ 标签API连接失败</h3>
+                        <p>错误: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testImageAccess() {
+            const resultsDiv = document.getElementById('results');
+            try {
+                // 首先获取一个媒体项
+                const mediaResponse = await fetch('http://localhost:5000/api/media?per_page=1');
+                const mediaData = await mediaResponse.json();
+                
+                if (mediaData.media.length > 0) {
+                    const media = mediaData.media[0];
+                    const imageUrl = `http://localhost:5000/uploads/${media.file_type}s/${encodeURIComponent(media.filename)}`;
+                    
+                    const img = new Image();
+                    img.onload = function() {
+                        resultsDiv.innerHTML += `
+                            <div class="result success">
+                                <h3>✓ 图片访问测试成功</h3>
+                                <p>文件名: ${media.original_filename}</p>
+                                <p>图片URL: ${imageUrl}</p>
+                                <img src="${imageUrl}" style="max-width: 200px; margin-top: 10px;">
+                            </div>
+                        `;
+                    };
+                    img.onerror = function() {
+                        resultsDiv.innerHTML += `
+                            <div class="result error">
+                                <h3>✗ 图片加载失败</h3>
+                                <p>文件名: ${media.original_filename}</p>
+                                <p>图片URL: ${imageUrl}</p>
+                            </div>
+                        `;
+                    };
+                    img.src = imageUrl;
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="result error">
+                            <h3>✗ 没有找到媒体文件</h3>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="result error">
+                        <h3>✗ 图片访问测试失败</h3>
+                        <p>错误: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

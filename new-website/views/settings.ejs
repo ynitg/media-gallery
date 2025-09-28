@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-network-wired text-blue-600 text-2xl"></i>
+                        <span class="ml-2 text-xl font-bold text-gray-900">IP管理系统</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-home"></i> 仪表板
+                    </a>
+                    <span class="text-sm text-gray-700">
+                        <i class="fas fa-user mr-1"></i><%= admin.username %>
+                    </span>
+                    <a href="/logout" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- 页面标题 -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">系统设置</h1>
+            <p class="mt-2 text-gray-600">管理您的账户和系统偏好</p>
+        </div>
+
+        <div class="space-y-8">
+            <!-- 账户信息 -->
+            <div class="card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    <i class="fas fa-user mr-2"></i>账户信息
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="form-label">用户名</label>
+                        <input type="text" value="<%= admin.username %>" class="form-input" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">邮箱</label>
+                        <input type="email" value="<%= admin.email || '未设置' %>" class="form-input" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">创建时间</label>
+                        <input type="text" value="<%= new Date(admin.createdAt).toLocaleString('zh-CN') %>" class="form-input" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">最后登录</label>
+                        <input type="text" value="刚刚" class="form-input" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 修改密码 -->
+            <div class="card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    <i class="fas fa-lock mr-2"></i>修改密码
+                </h3>
+                
+                <form id="passwordForm" class="space-y-4">
+                    <div>
+                        <label class="form-label">当前密码 *</label>
+                        <input type="password" id="currentPassword" name="currentPassword" class="form-input" required>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">新密码 *</label>
+                        <input type="password" id="newPassword" name="newPassword" class="form-input" required minlength="6">
+                        <p class="text-sm text-gray-500 mt-1">密码长度至少6位</p>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">确认新密码 *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save mr-2"></i>更新密码
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 系统信息 -->
+            <div class="card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    <i class="fas fa-info-circle mr-2"></i>系统信息
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="form-label">系统版本</label>
+                        <input type="text" value="1.0.0" class="form-input" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Node.js版本</label>
+                        <input type="text" value="<%= process.version %>" class="form-input" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">运行环境</label>
+                        <input type="text" value="<%= process.env.NODE_ENV || 'development' %>" class="form-input" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">服务器时间</label>
+                        <input type="text" value="<%= new Date().toLocaleString('zh-CN') %>" class="form-input" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据库信息 -->
+            <div class="card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    <i class="fas fa-database mr-2"></i>数据库信息
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="form-label">数据库类型</label>
+                        <input type="text" value="SQLite" class="form-input" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">数据库文件</label>
+                        <input type="text" value="data/ip_management.db" class="form-input" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">连接状态</label>
+                        <div class="flex items-center">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-circle text-green-500 mr-1" style="font-size: 6px;"></i>
+                                正常
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">最后备份</label>
+                        <input type="text" value="未设置" class="form-input" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作日志 -->
+            <div class="card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    <i class="fas fa-history mr-2"></i>最近操作
+                </h3>
+                
+                <div class="table-container">
+                    <table class="table">
+                        <thead class="table-header">
+                            <tr>
+                                <th>时间</th>
+                                <th>操作</th>
+                                <th>IP地址</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-body">
+                            <tr>
+                                <td colspan="4" class="text-center text-gray-500 py-8">
+                                    <i class="fas fa-inbox mr-2"></i>暂无操作记录
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 修改密码表单提交
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                showAlert('新密码和确认密码不匹配', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showAlert('新密码长度至少6位', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/update-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword,
+                        confirmPassword: confirmPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('密码更新成功', 'success');
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    showAlert('密码更新失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('更新密码失败:', error);
+                showAlert('更新密码失败，请稍后重试', 'error');
+            }
+        });
+
+        // 显示提示信息
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-100 text-green-800' :
+                type === 'error' ? 'bg-red-100 text-red-800' :
+                'bg-blue-100 text-blue-800'
+            }`;
+            alertDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+
+
+
+

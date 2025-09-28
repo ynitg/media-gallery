@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= settings.siteTitle || '媒体展示' %></title>
+  <style>
+    :root { --gap: 16px; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: #f8fafc; }
+    .banner {
+      position: relative;
+      padding: 40px 16px;
+      text-align: center;
+      color: #111827;
+      background: #ffffff;
+      background-image: <%= settings.backgroundImage ? `url('${settings.backgroundImage}')` : 'none' %>;
+      background-size: cover;
+      background-position: center;
+    }
+    .banner::after {
+      content: '';
+      position: absolute; inset: 0; background: <%= settings.backgroundImage ? 'rgba(255,255,255,0.6)' : 'transparent' %>;
+    }
+    .banner-inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; }
+    .title { margin: 0; font-size: 28px; font-weight: 700; }
+
+    .controls { max-width: 1200px; margin: 16px auto; padding: 0 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .media-type-tabs { display: flex; gap: 8px; }
+    .media-tab { padding: 8px 14px; border: 1px solid #e5e7eb; border-radius: 999px; background: #fff; color: #111827; cursor: pointer; font-size: 14px; }
+    .media-tab.active { background: #111827; color: #fff; border-color: #111827; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip { padding: 6px 12px; border: 1px solid #e5e7eb; border-radius: 999px; background: #fff; color: #111827; cursor: pointer; font-size: 13px; }
+    .chip.active { background: #111827; color: #fff; border-color: #111827; }
+    .spacer { flex: 1; }
+    .admin-links a { display: inline-block; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 8px; text-decoration: none; color: #111827; background: #fff; font-size: 14px; }
+
+    /* Masonry using CSS columns */
+    .masonry { column-count: 4; column-gap: var(--gap); max-width: 1200px; margin: 16px auto; padding: 0 16px; }
+    @media (max-width: 1200px) { .masonry { column-count: 3; } }
+    @media (max-width: 900px) { .masonry { column-count: 2; } }
+    @media (max-width: 600px) { .masonry { column-count: 1; } }
+
+    .tile { break-inside: avoid; margin-bottom: var(--gap); border-radius: 12px; overflow: hidden; background: #fff; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer; }
+    .tile img, .tile video { width: 100%; height: auto; display: block; }
+    .tile video { background: #000; }
+    .tile .meta { padding: 10px 12px; color: #6b7280; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .badge { font-size: 11px; padding: 2px 6px; border-radius: 999px; background: #e5e7eb; color: #111827; }
+
+    /* Modal */
+    .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.6); }
+    .modal-content { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .modal img, .modal video { max-width: 95vw; max-height: 95vh; width: auto; height: auto; object-fit: contain; background: #000; }
+    .close { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; border-radius: 999px; background: rgba(255,255,255,0.9); color: #111827; display: grid; place-items: center; font-weight: 700; cursor: pointer; }
+  </style>
+  <% if (settings.analyticsCode) { %>
+    <%- settings.analyticsCode %>
+  <% } %>
+  <script>
+    function qs(name){ const p=new URLSearchParams(location.search); return p.get(name); }
+    function setQuery(params){ const p=new URLSearchParams(location.search); Object.keys(params).forEach(k=>{ const v=params[k]; if(v===null||v===undefined||v===''){ p.delete(k);} else { p.set(k,v);} }); location.search=p.toString(); }
+  </script>
+</head>
+<body>
+  <div class="banner">
+    <div class="banner-inner">
+      <h1 class="title"><%= settings.siteTitle || '媒体展示' %></h1>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="media-type-tabs">
+      <button class="media-tab <%= (req.query.type||'all')==='all' ? 'active' : '' %>" onclick="setQuery({ type:'all' })">全部</button>
+      <button class="media-tab <%= req.query.type==='image' ? 'active' : '' %>" onclick="setQuery({ type:'image' })">图片</button>
+      <button class="media-tab <%= req.query.type==='video' ? 'active' : '' %>" onclick="setQuery({ type:'video' })">视频</button>
+    </div>
+    <div class="chips">
+      <button class="chip <%= (currentTag||'')==='' ? 'active' : '' %>" onclick="setQuery({ tag:'' })">全部标签</button>
+      <% (tags || []).forEach(function(t){ %>
+        <button class="chip <%= currentTag===t ? 'active' : '' %>" onclick="setQuery({ tag:'<%= t %>' })"><%= t %></button>
+      <% }) %>
+    </div>
+    <div class="spacer"></div>
+    <div class="admin-links">
+      <% if (loggedIn) { %>
+        <a href="/admin">上传媒体</a>
+        <a href="/admin/media">媒体管理</a>
+        <a href="/admin/settings">网站设置</a>
+        <a href="/logout">退出登录</a>
+      <% } else { %>
+        <a href="/admin/login">管理员登录</a>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="masonry">
+    <% if (!media || media.length === 0) { %>
+      <div style="text-align:center; color:#6b7280; padding: 40px 0;">暂无内容</div>
+    <% } %>
+    <% (media || []).forEach(function(item){ %>
+      <div class="tile" onclick="openModal('<%= item.type %>', '<%= item.path %>', '<%= (item.originalName||'').replace(/'/g, "\'") %>')">
+        <% if (item.type === 'video') { %>
+          <video muted preload="metadata" src="<%= item.path %>#t=0.001"></video>
+        <% } else { %>
+          <img src="<%= item.path %>" alt="<%= item.originalName %>" />
+        <% } %>
+        <div class="meta">
+          <span><%= item.originalName %></span>
+          <span class="badge"><%= item.type === 'video' ? '视频' : '图片' %></span>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <div id="modal" class="modal" onclick="closeModal(event)">
+    <div class="modal-content">
+      <div class="close" onclick="closeModal(event)">×</div>
+      <img id="modalImg" style="display:none" />
+      <video id="modalVideo" style="display:none" controls></video>
+    </div>
+  </div>
+
+  <script>
+    function openModal(type, src, alt){
+      const m=document.getElementById('modal');
+      const img=document.getElementById('modalImg');
+      const vid=document.getElementById('modalVideo');
+      if(type==='image'){
+        vid.pause(); vid.removeAttribute('src'); vid.style.display='none';
+        img.src=src; img.alt=alt||''; img.style.display='block';
+      } else {
+        img.removeAttribute('src'); img.style.display='none';
+        vid.src=src; vid.style.display='block'; setTimeout(()=>vid.play().catch(()=>{}),0);
+      }
+      m.style.display='block';
+    }
+    function closeModal(e){
+      if(e && e.target && !e.target.classList.contains('close') && e.target.id !== 'modal'){ if(e.currentTarget && e.currentTarget.id!== 'modal') return; }
+      const m=document.getElementById('modal');
+      const vid=document.getElementById('modalVideo');
+      vid.pause();
+      m.style.display='none';
+    }
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeModal({target:{id:'modal'}}); } });
+  </script>
+</body>
+</html>

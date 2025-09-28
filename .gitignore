@@ -1,0 +1,34 @@
+﻿# Node
+node_modules/
+.npm/
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build / Coverage
+.dist/
+dist/
+build/
+coverage/
+
+# Env & editor
+.env
+.env.*
+*.swp
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Uploads and generated data (do not commit runtime content)
+uploads/
+!uploads/.gitkeep
+
+data/credentials.json
+data/media.json
+data/settings.json
+
+# OS
+Desktop.ini

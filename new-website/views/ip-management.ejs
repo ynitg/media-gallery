@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- 顶部快速显示标签区域 -->
+    <header class="bg-blue-600 text-white shadow-lg">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="bg-blue-500 rounded-lg px-4 py-2">
+                        <span class="text-white font-medium">快速显示标签</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm">
+                        <i class="fas fa-user mr-1"></i>欢迎, <%= admin.username %>
+                    </span>
+                    <a href="/settings" class="text-white hover:text-blue-200 transition-colors">
+                        <i class="fas fa-cog"></i>
+                    </a>
+                    <a href="/logout" class="text-white hover:text-blue-200 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex h-screen">
+        <!-- 左侧多级菜单区域 -->
+        <aside class="bg-blue-600 text-white w-64 shadow-lg">
+            <nav class="mt-4">
+                <div class="px-4 space-y-1">
+                    <!-- 一级菜单 - 资源管理 -->
+                    <div class="menu-group">
+                        <div class="menu-item-level1 flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors" onclick="toggleMenu('resource')">
+                            <div class="flex items-center">
+                                <i class="fas fa-plus mr-3"></i>
+                                <span>资源管理</span>
+                            </div>
+                            <i class="fas fa-chevron-down transition-transform" id="resource-arrow"></i>
+                        </div>
+                        
+                        <!-- 二级菜单 -->
+                        <div class="ml-4 space-y-1" id="resource-submenu" style="display: block;">
+                            <!-- IP管理 -->
+                            <div class="menu-item-level2 flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors" onclick="toggleMenu('ip')">
+                                <span>IP管理</span>
+                                <i class="fas fa-chevron-down transition-transform" id="ip-arrow"></i>
+                            </div>
+                            
+                            <!-- 三级菜单 -->
+                            <div class="ml-4 space-y-1" id="ip-submenu" style="display: block;">
+                                <a href="/ip-management" class="menu-item-level3 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors bg-blue-700">
+                                    公网IP管理
+                                </a>
+                                <a href="/ip-management" class="menu-item-level3 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                    内网IP管理
+                                </a>
+                            </div>
+                            
+                            <!-- 机房管理 -->
+                            <a href="/server-room" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                机房管理
+                            </a>
+                            
+                            <!-- 楼内线管理 -->
+                            <a href="/building-lines" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                楼内线管理
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 一级菜单 - 用户管理 -->
+                    <div class="menu-group">
+                        <div class="menu-item-level1 flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors" onclick="toggleMenu('user')">
+                            <span>用户管理</span>
+                            <i class="fas fa-chevron-down transition-transform" id="user-arrow"></i>
+                        </div>
+                        
+                        <!-- 二级菜单 -->
+                        <div class="ml-4 space-y-1" id="user-submenu" style="display: none;">
+                            <a href="/user-groups" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                用户组管理
+                            </a>
+                            <a href="/users" class="menu-item-level2 block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                用户管理
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 一级菜单 - 系统设置 -->
+                    <a href="/settings" class="menu-item-level1 block px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                        系统设置
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 右侧显示区域 -->
+        <main class="flex-1 bg-gray-50 overflow-y-auto">
+            <div class="p-6">
+                <!-- 页面标题和操作按钮 -->
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">IP管理</h1>
+                        <p class="mt-2 text-gray-600">管理IP地址记录</p>
+                    </div>
+            <div class="space-x-3">
+                <button onclick="openAddModal()" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>添加IP
+                </button>
+                <a href="/ip-split" class="btn-warning">
+                    <i class="fas fa-code-branch mr-2"></i>IP分割
+                </a>
+                <a href="/ip-merge" class="btn-success">
+                    <i class="fas fa-compress-alt mr-2"></i>IP合并
+                </a>
+            </div>
+        </div>
+
+        <!-- 搜索和筛选 -->
+        <div class="card mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="form-label">搜索IP地址</label>
+                    <input type="text" id="searchInput" class="form-input" placeholder="输入IP地址...">
+                </div>
+                <div>
+                    <label class="form-label">状态筛选</label>
+                    <select id="statusFilter" class="form-input">
+                        <option value="">全部状态</option>
+                        <option value="active">活跃</option>
+                        <option value="inactive">非活跃</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">每页显示</label>
+                    <select id="pageSize" class="form-input">
+                        <option value="10">10条</option>
+                        <option value="20">20条</option>
+                        <option value="50">50条</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="loadIPs()" class="btn-primary w-full">
+                        <i class="fas fa-search mr-2"></i>搜索
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- IP列表 -->
+        <div class="card">
+            <div class="table-container">
+                <table class="table">
+                    <thead class="table-header">
+                        <tr>
+                            <th>ID</th>
+                            <th>IP地址</th>
+                            <th>子网掩码</th>
+                            <th>网络地址</th>
+                            <th>广播地址</th>
+                            <th>网关</th>
+                            <th>机房</th>
+                            <th>VLAN</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body" id="ipTableBody">
+                        <tr>
+                            <td colspan="11" class="text-center text-gray-500 py-8">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <div class="flex items-center justify-between mt-6" id="pagination">
+                <!-- 分页内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑IP模态框 -->
+    <div id="ipModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-900" id="modalTitle">添加IP记录</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="ipForm" class="space-y-4">
+                    <input type="hidden" id="ipId" name="id">
+                    
+                    <div>
+                        <label class="form-label">IP地址 *</label>
+                        <input type="text" id="ipAddress" name="ip_address" class="form-input" 
+                               placeholder="192.168.1.1" required>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">子网掩码 *</label>
+                        <input type="text" id="subnetMask" name="subnet_mask" class="form-input" 
+                               placeholder="24" required>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">网关</label>
+                        <input type="text" id="gateway" name="gateway" class="form-input" 
+                               placeholder="192.168.1.1">
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">机房归属</label>
+                        <select id="serverRoomId" name="server_room_id" class="form-input">
+                            <option value="">请选择机房</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">VLAN ID</label>
+                        <input type="text" id="vlanId" name="vlan_id" class="form-input" 
+                               placeholder="请输入VLAN ID">
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">描述</label>
+                        <textarea id="description" name="description" class="form-input" rows="3" 
+                                  placeholder="IP段描述信息..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">状态</label>
+                        <select id="status" name="status" class="form-input">
+                            <option value="active">活跃</option>
+                            <option value="inactive">非活跃</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeModal()" class="btn-secondary">
+                            取消
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save mr-2"></i>保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 菜单展开/收起功能
+        function toggleMenu(menuId) {
+            const submenu = document.getElementById(menuId + '-submenu');
+            const arrow = document.getElementById(menuId + '-arrow');
+            
+            if (submenu.style.display === 'none') {
+                submenu.style.display = 'block';
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                submenu.style.display = 'none';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        let currentPage = 1;
+        let currentPageSize = 10;
+        let currentData = [];
+        let serverRooms = [];
+
+        // 加载IP列表
+        async function loadIPs(page = 1) {
+            try {
+                const searchTerm = document.getElementById('searchInput').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+                const pageSize = document.getElementById('pageSize').value;
+                
+                currentPage = page;
+                currentPageSize = parseInt(pageSize);
+                
+                let url = `/api/ips?page=${page}&limit=${pageSize}`;
+                if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+                if (statusFilter) url += `&status=${statusFilter}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentData = data.data;
+                    displayIPs(data.data);
+                    displayPagination(data.pagination);
+                } else {
+                    showAlert('加载IP列表失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('加载IP列表失败:', error);
+                showAlert('加载IP列表失败', 'error');
+            }
+        }
+
+        // 显示IP列表
+        function displayIPs(ips) {
+            const tbody = document.getElementById('ipTableBody');
+            
+            if (ips.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="11" class="text-center text-gray-500 py-8">
+                            <i class="fas fa-inbox mr-2"></i>暂无IP记录
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = ips.map(ip => `
+                <tr>
+                    <td>${ip.id}</td>
+                    <td>${ip.ip_address}</td>
+                    <td>${ip.subnet_mask}</td>
+                    <td>${ip.network_address}</td>
+                    <td>${ip.broadcast_address}</td>
+                    <td>${ip.gateway || '-'}</td>
+                    <td>${ip.server_room_name || '-'}</td>
+                    <td>${ip.vlan_id || '-'}</td>
+                    <td>
+                        <span class="${ip.status === 'active' ? 'status-active' : 'status-inactive'}">
+                            ${ip.status === 'active' ? '活跃' : '非活跃'}
+                        </span>
+                    </td>
+                    <td>${new Date(ip.created_at).toLocaleString('zh-CN')}</td>
+                    <td>
+                        <div class="flex space-x-2">
+                            <button onclick="editIP(${ip.id})" class="text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="viewIPDetails(${ip.id})" class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="deleteIP(${ip.id})" class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 显示分页
+        function displayPagination(pagination) {
+            const paginationDiv = document.getElementById('pagination');
+            const { page, pages, total } = pagination;
+            
+            let paginationHTML = `
+                <div class="text-sm text-gray-700">
+                    显示第 ${(page - 1) * currentPageSize + 1} 到 ${Math.min(page * currentPageSize, total)} 条，共 ${total} 条记录
+                </div>
+                <div class="flex space-x-2">
+            `;
+            
+            // 上一页
+            if (page > 1) {
+                paginationHTML += `<button onclick="loadIPs(${page - 1})" class="btn-secondary">上一页</button>`;
+            }
+            
+            // 页码
+            const startPage = Math.max(1, page - 2);
+            const endPage = Math.min(pages, page + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = i === page ? 'btn-primary' : 'btn-secondary';
+                paginationHTML += `<button onclick="loadIPs(${i})" class="${isActive}">${i}</button>`;
+            }
+            
+            // 下一页
+            if (page < pages) {
+                paginationHTML += `<button onclick="loadIPs(${page + 1})" class="btn-secondary">下一页</button>`;
+            }
+            
+            paginationHTML += '</div>';
+            paginationDiv.innerHTML = paginationHTML;
+        }
+
+        // 打开添加模态框
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = '添加IP记录';
+            document.getElementById('ipForm').reset();
+            document.getElementById('ipId').value = '';
+            document.getElementById('ipModal').classList.remove('hidden');
+        }
+
+        // 加载机房列表
+        async function loadServerRooms() {
+            try {
+                const response = await fetch('/api/server-rooms/active');
+                const data = await response.json();
+                
+                if (data.success) {
+                    serverRooms = data.data;
+                    populateServerRoomSelect();
+                }
+            } catch (error) {
+                console.error('加载机房列表失败:', error);
+            }
+        }
+
+        // 填充机房选择框
+        function populateServerRoomSelect() {
+            const select = document.getElementById('serverRoomId');
+            select.innerHTML = '<option value="">请选择机房</option>';
+            
+            serverRooms.forEach(room => {
+                const option = document.createElement('option');
+                option.value = room.id;
+                option.textContent = `${room.name} (${room.location || '无位置'})`;
+                select.appendChild(option);
+            });
+        }
+
+        // 编辑IP
+        function editIP(id) {
+            const ip = currentData.find(ip => ip.id === id);
+            if (!ip) return;
+            
+            document.getElementById('modalTitle').textContent = '编辑IP记录';
+            document.getElementById('ipId').value = ip.id;
+            document.getElementById('ipAddress').value = ip.ip_address;
+            document.getElementById('subnetMask').value = ip.subnet_mask;
+            document.getElementById('gateway').value = ip.gateway || '';
+            document.getElementById('serverRoomId').value = ip.server_room_id || '';
+            document.getElementById('vlanId').value = ip.vlan_id || '';
+            document.getElementById('description').value = ip.description || '';
+            document.getElementById('status').value = ip.status;
+            
+            document.getElementById('ipModal').classList.remove('hidden');
+        }
+
+        // 查看IP详情
+        async function viewIPDetails(id) {
+            try {
+                const response = await fetch(`/api/ips/${id}/details`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const ip = data.data;
+                    const details = ip.details;
+                    
+                    alert(`IP详细信息:\n\n` +
+                          `IP地址: ${ip.ip_address}\n` +
+                          `子网掩码: ${ip.subnet_mask}\n` +
+                          `网络地址: ${details.network}\n` +
+                          `广播地址: ${details.broadcast}\n` +
+                          `可用主机数: ${details.usableHosts}\n` +
+                          `网关: ${ip.gateway || '未设置'}\n` +
+                          `描述: ${ip.description || '无'}\n` +
+                          `状态: ${ip.status === 'active' ? '活跃' : '非活跃'}\n` +
+                          `创建时间: ${new Date(ip.created_at).toLocaleString('zh-CN')}`);
+                } else {
+                    showAlert('获取IP详情失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('获取IP详情失败:', error);
+                showAlert('获取IP详情失败', 'error');
+            }
+        }
+
+        // 删除IP
+        async function deleteIP(id) {
+            if (!confirm('确定要删除这个IP记录吗？')) return;
+            
+            try {
+                const response = await fetch(`/api/ips/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('IP记录删除成功', 'success');
+                    loadIPs(currentPage);
+                } else {
+                    showAlert('删除IP记录失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('删除IP记录失败:', error);
+                showAlert('删除IP记录失败', 'error');
+            }
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('ipModal').classList.add('hidden');
+        }
+
+        // 提交表单
+        document.getElementById('ipForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const url = data.id ? `/api/ips/${data.id}` : '/api/ips';
+                const method = data.id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(data.id ? 'IP记录更新成功' : 'IP记录创建成功', 'success');
+                    closeModal();
+                    loadIPs(currentPage);
+                } else {
+                    showAlert((data.id ? '更新' : '创建') + 'IP记录失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('提交表单失败:', error);
+                showAlert('操作失败，请稍后重试', 'error');
+            }
+        });
+
+        // 显示提示信息
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-100 text-green-800' :
+                type === 'error' ? 'bg-red-100 text-red-800' :
+                'bg-blue-100 text-blue-800'
+            }`;
+            alertDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        // 页面加载完成后获取数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadServerRooms();
+            loadIPs();
+            
+            // 绑定搜索事件
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loadIPs();
+                }
+            });
+            
+            // 绑定筛选事件
+            document.getElementById('statusFilter').addEventListener('change', loadIPs);
+            document.getElementById('pageSize').addEventListener('change', function() {
+                loadIPs(1);
+            });
+        });
+    </script>
+        </main>
+    </div>
+</body>
+</html>
+

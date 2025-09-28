@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+        }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-header h1 {
+            color: #2d3748;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info span {
+            color: #718096;
+            font-weight: 500;
+        }
+        
+        .logout-btn {
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .admin-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .admin-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .admin-card h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            color: #2d3748;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .upload-btn {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .media-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .media-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .media-item-info {
+            flex: 1;
+        }
+        
+        .media-item-name {
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .media-item-meta {
+            font-size: 12px;
+            color: #718096;
+        }
+        
+        .delete-btn {
+            padding: 6px 12px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .message.success {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+        
+        .message.error {
+            background: #fed7d7;
+            color: #c53030;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🔐 管理后台</h1>
+            <div class="user-info">
+                <span>欢迎，<span id="username">管理员</span></span>
+                <a href="#" class="logout-btn" id="logoutBtn">退出登录</a>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalMedia">0</div>
+                <div class="stat-label">总媒体数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalImages">0</div>
+                <div class="stat-label">图片数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalVideos">0</div>
+                <div class="stat-label">视频数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalClicks">0</div>
+                <div class="stat-label">总点击数</div>
+            </div>
+        </div>
+        
+        <div class="admin-content">
+            <div class="admin-card">
+                <h2>📁 上传媒体</h2>
+                <div class="message" id="uploadMessage"></div>
+                <form class="upload-form" id="uploadForm">
+                    <div class="form-group">
+                        <label for="fileInput">选择文件</label>
+                        <input type="file" id="fileInput" accept="image/*,video/*" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tagInput">标签 (用逗号分隔)</label>
+                        <input type="text" id="tagInput" placeholder="例如: 风景,人物,自然">
+                    </div>
+                    <button type="submit" class="upload-btn" id="uploadBtn">上传文件</button>
+                </form>
+                <div class="loading" id="uploadLoading">正在上传...</div>
+            </div>
+            
+            <div class="admin-card">
+                <h2>🖼️ 背景图片管理</h2>
+                <div class="message" id="backgroundMessage"></div>
+                <form class="upload-form" id="backgroundForm">
+                    <div class="form-group">
+                        <label for="backgroundInput">选择背景图片</label>
+                        <input type="file" id="backgroundInput" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="upload-btn" id="backgroundBtn">上传背景</button>
+                    <button type="button" class="upload-btn" id="deleteBackgroundBtn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">删除背景</button>
+                </form>
+                <div class="loading" id="backgroundLoading">正在处理...</div>
+                <div id="currentBackground" style="margin-top: 20px; text-align: center;">
+                    <p style="color: #718096;">当前没有背景图片</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="admin-content" style="margin-top: 30px;">
+            <div class="admin-card" style="grid-column: 1 / -1;">
+                <h2>📋 媒体管理</h2>
+                <div class="loading" id="mediaLoading">加载中...</div>
+                <div class="media-list" id="mediaList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检查登录状态
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('adminLoggedIn');
+            const username = localStorage.getItem('adminUsername');
+            
+            if (!isLoggedIn || !username) {
+                window.location.href = 'admin.html';
+                return;
+            }
+            
+            document.getElementById('username').textContent = username;
+        }
+        
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                const response = await fetch('http://localhost:5001/api/media');
+                const data = await response.json();
+                
+                let totalImages = 0;
+                let totalVideos = 0;
+                let totalClicks = 0;
+                
+                data.media.forEach(media => {
+                    if (media.file_type === 'image') {
+                        totalImages++;
+                    } else if (media.file_type === 'video') {
+                        totalVideos++;
+                    }
+                    totalClicks += media.click_count || 0;
+                });
+                
+                document.getElementById('totalMedia').textContent = data.total;
+                document.getElementById('totalImages').textContent = totalImages;
+                document.getElementById('totalVideos').textContent = totalVideos;
+                document.getElementById('totalClicks').textContent = totalClicks;
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
+        }
+        
+        // 加载媒体列表
+        async function loadMediaList() {
+            const mediaList = document.getElementById('mediaList');
+            const loading = document.getElementById('mediaLoading');
+            
+            loading.style.display = 'block';
+            mediaList.innerHTML = '';
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/media?per_page=50');
+                const data = await response.json();
+                
+                if (data.media.length === 0) {
+                    mediaList.innerHTML = '<p style="text-align: center; color: #718096;">暂无媒体文件</p>';
+                } else {
+                    data.media.forEach(media => {
+                        const mediaItem = document.createElement('div');
+                        mediaItem.className = 'media-item';
+                        mediaItem.innerHTML = `
+                            <div class="media-item-info">
+                                <div class="media-item-name">${media.original_filename}</div>
+                                <div class="media-item-meta">
+                                    类型: ${media.file_type === 'image' ? '图片' : '视频'} | 
+                                    标签: ${media.tags} | 
+                                    点击: ${media.click_count || 0}
+                                </div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteMedia('${media.id}')">删除</button>
+                        `;
+                        mediaList.appendChild(mediaItem);
+                    });
+                }
+            } catch (error) {
+                console.error('加载媒体列表失败:', error);
+                mediaList.innerHTML = '<p style="text-align: center; color: #ef4444;">加载失败</p>';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // 加载背景图片
+        async function loadBackground() {
+            try {
+                const response = await fetch('http://localhost:5001/api/settings/background');
+                const data = await response.json();
+                
+                const currentBg = document.getElementById('currentBackground');
+                if (data.background_image) {
+                    currentBg.innerHTML = `
+                        <img src="http://localhost:5001${data.background_image}" alt="当前背景" style="max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 10px;">
+                        <p style="color: #718096; margin: 0;">当前背景图片</p>
+                    `;
+                } else {
+                    currentBg.innerHTML = '<p style="color: #718096;">当前没有背景图片</p>';
+                }
+            } catch (error) {
+                console.error('加载背景图片失败:', error);
+            }
+        }
+        
+        // 上传文件
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const tagInput = document.getElementById('tagInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadLoading = document.getElementById('uploadLoading');
+            const message = document.getElementById('uploadMessage');
+            
+            if (!fileInput.files[0]) {
+                showMessage('请选择文件', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('tags', tagInput.value);
+            
+            uploadBtn.disabled = true;
+            uploadLoading.style.display = 'block';
+            message.style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/admin/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('文件上传成功！', 'success');
+                    fileInput.value = '';
+                    tagInput.value = '';
+                    loadStats();
+                    loadMediaList();
+                } else {
+                    showMessage(data.error || '上传失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误，请稍后重试', 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadLoading.style.display = 'none';
+            }
+        });
+
+        // 上传背景图片
+        document.getElementById('backgroundForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const backgroundInput = document.getElementById('backgroundInput');
+            const backgroundBtn = document.getElementById('backgroundBtn');
+            const backgroundLoading = document.getElementById('backgroundLoading');
+            const message = document.getElementById('backgroundMessage');
+            
+            if (!backgroundInput.files[0]) {
+                showMessage('backgroundMessage', '请选择背景图片', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', backgroundInput.files[0]);
+            
+            backgroundBtn.disabled = true;
+            backgroundLoading.style.display = 'block';
+            message.style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/admin/background', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('backgroundMessage', data.message, 'success');
+                    backgroundInput.value = '';
+                    loadBackground();
+                } else {
+                    showMessage('backgroundMessage', data.error || '上传失败', 'error');
+                }
+            } catch (error) {
+                showMessage('backgroundMessage', '网络错误，请稍后重试', 'error');
+            } finally {
+                backgroundBtn.disabled = false;
+                backgroundLoading.style.display = 'none';
+            }
+        });
+
+        // 删除背景图片
+        document.getElementById('deleteBackgroundBtn').addEventListener('click', async function() {
+            if (!confirm('确定要删除当前背景图片吗？')) {
+                return;
+            }
+            
+            const backgroundBtn = document.getElementById('deleteBackgroundBtn');
+            const backgroundLoading = document.getElementById('backgroundLoading');
+            const message = document.getElementById('backgroundMessage');
+            
+            backgroundBtn.disabled = true;
+            backgroundLoading.style.display = 'block';
+            message.style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/admin/background', {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('backgroundMessage', data.message, 'success');
+                    loadBackground();
+                } else {
+                    showMessage('backgroundMessage', data.error || '删除失败', 'error');
+                }
+            } catch (error) {
+                showMessage('backgroundMessage', '网络错误，请稍后重试', 'error');
+            } finally {
+                backgroundBtn.disabled = false;
+                backgroundLoading.style.display = 'none';
+            }
+        });
+        
+        // 删除媒体
+        async function deleteMedia(mediaId) {
+            if (!confirm('确定要删除这个媒体文件吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:5001/api/admin/media/${mediaId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadStats();
+                    loadMediaList();
+                } else {
+                    alert('删除失败');
+                }
+            } catch (error) {
+                alert('网络错误，请稍后重试');
+            }
+        }
+        
+        // 显示消息
+        function showMessage(text, type) {
+            const message = document.getElementById('uploadMessage');
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+            
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 退出登录
+        document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            try {
+                await fetch('http://localhost:5001/api/admin/logout', {
+                    method: 'POST'
+                });
+            } catch (error) {
+                console.error('退出登录失败:', error);
+            } finally {
+                localStorage.removeItem('adminLoggedIn');
+                localStorage.removeItem('adminUsername');
+                window.location.href = 'admin.html';
+            }
+        });
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadStats();
+            loadMediaList();
+        });
+    </script>
+</body>
+</html>
